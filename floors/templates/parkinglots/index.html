@@ -40,193 +40,169 @@
   }
 </style>
 
-<div class="page-inner">
-  <div class="page-header">
-    <h3 class="fw-bold mb-3">Estacionamientos</h3>
-    <ul class="breadcrumbs mb-3">
-      <li class="nav-home">
-        <a href="{% url 'index' %}">
-          <i class="icon-home"></i>
-        </a>
-      </li>
-      <li class="separator">
-        <i class="icon-arrow-right"></i>
-      </li>
-      <li class="nav-item">
-        <a href="#">Maestras</a>
-      </li>
-      <li class="separator">
-        <i class="icon-arrow-right"></i>
-      </li>
-      <li class="nav-item">
-        <a href="#">Estacionamientos</a>
-      </li>
-    </ul>
-  </div>
-  <div class="row">
-    <div class="col-md-12">
-      <div class="card">
-        <div class="card-header">
-          <div class="d-flex align-items-center">
-            <h4 class="card-title">Generador de Estacionamientos</h4>
-            <button
-              class="btn btn-primary btn-round ms-auto"
-              data-bs-toggle="modal"
-              data-bs-target="#addRowModal"
-              id="savesimulation"
-            >
-              <i class="fa fa-save"></i>
-              Guardar simulación
-            </button>
-          </div>
+<div class="row">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <div class="d-flex align-items-center">
+          <!-- <h4 class="card-title">Generador de Estacionamientos</h4> -->
+          <button
+            class="btn btn-primary btn-round ms-auto"
+            data-bs-toggle="modal"
+            data-bs-target="#addRowModal"
+            id="savesimulation"
+          >
+            <i class="fa fa-save"></i>
+            Guardar simulación
+          </button>
         </div>
-        <div class="card-body">
-          <div class="row">
-            <div class="col-md-8 col-sm-12">
-              <form
-                id="matrixForm"
-                class="row"
-              >
-                <div class="col-md-3">
-                  <div class="mb-3">
-                    <div class="form-floating">
-                      <select
-                        id="floor"
-                        class="form-select form-select-sm"
-                        aria-label=".form-select-sm example"
-                      >
-                        {% for floor in floors %}
-                        <option value="{{ floor.id }}">{{ floor.name}}</option>
-                        {% endfor %}
-                      </select>
-                      <label
-                        for="floor"
-                        class="fw-bold"
-                        >Piso</label
-                      >
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="mb-3">
-                    <div class="form-floating">
-                      <select
-                        id="orientation"
-                        class="form-select form-select-sm"
-                        aria-label=".form-select-sm example"
-                      >
-                        <option value="HORIZONTAL">Horizontal</option>
-                        <option value="VERTICAL">Vertical</option>
-                      </select>
-                      <label
-                        for="orientation"
-                        class="fw-bold"
-                        >Orientación</label
-                      >
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="mb-3">
-                    <div class="form-floating">
-                      <input
-                        type="number"
-                        class="form-control"
-                        id="rows"
-                        value="5"
-                      />
-                      <label
-                        for="rows"
-                        class="fw-bold"
-                        >N° Filas</label
-                      >
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="mb-3">
-                    <div class="form-floating">
-                      <input
-                        type="number"
-                        class="form-control"
-                        id="numberparq"
-                        value="5"
-                        required
-                      />
-                      <label
-                        for="numberparq"
-                        class="fw-bold"
-                        >Espacios por fila</label
-                      >
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-4 ms-auto">
-                  <div class="d-grid gap-3">
-                    <button
-                      class="btn btn-secondary"
-                      type="submit"
-                      id="simulation"
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-8 col-sm-12">
+            <form
+              id="matrixForm"
+              class="row"
+            >
+              <div class="col-md-3">
+                <div class="mb-3">
+                  <div class="form-floating">
+                    <select
+                      id="floor"
+                      class="form-select form-select-sm"
+                      aria-label=".form-select-sm example"
                     >
-                      Simular
-                    </button>
+                      {% for floor in floors %}
+                      <option value="{{ floor.id }}">{{ floor.name}}</option>
+                      {% endfor %}
+                    </select>
+                    <label
+                      for="floor"
+                      class="fw-bold"
+                      >Piso</label
+                    >
                   </div>
                 </div>
-              </form>
-              <div class="row">
-                <div
-                  id="simulate"
-                  class="mt-3"
-                ></div>
               </div>
+              <div class="col-md-3">
+                <div class="mb-3">
+                  <div class="form-floating">
+                    <select
+                      id="orientation"
+                      class="form-select form-select-sm"
+                      aria-label=".form-select-sm example"
+                    >
+                      <option value="HORIZONTAL">Horizontal</option>
+                      <option value="VERTICAL">Vertical</option>
+                    </select>
+                    <label
+                      for="orientation"
+                      class="fw-bold"
+                      >Orientación</label
+                    >
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="mb-3">
+                  <div class="form-floating">
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="rows"
+                      value="5"
+                    />
+                    <label
+                      for="rows"
+                      class="fw-bold"
+                      >N° Filas</label
+                    >
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="mb-3">
+                  <div class="form-floating">
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="numberparq"
+                      value="5"
+                      required
+                    />
+                    <label
+                      for="numberparq"
+                      class="fw-bold"
+                      >Espacios por fila</label
+                    >
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4 ms-auto">
+                <div class="d-grid gap-3">
+                  <button
+                    class="btn btn-secondary"
+                    type="submit"
+                    id="simulation"
+                  >
+                    Simular
+                  </button>
+                </div>
+              </div>
+            </form>
+            <div class="row">
+              <div
+                id="simulate"
+                class="mt-3"
+              ></div>
             </div>
-            <div class="col-md-4 col-sm-12">
-              <div class="table-responsive">
-                <table
-                  id="multi-filter-select"
-                  class="display table table-striped table-hover"
-                >
-                  <thead>
-                    <tr>
-                      <th>Nombre</th>
-                      <!-- <th>Piso</th>
-                      <th>Orientación</th>
-                      <th>N° Parqueaderos</th>
-                      <th>Estado</th>
-                      <th>Fecha de creación</th> -->
-                    </tr>
-                  </thead>
-                  <tfoot>
-                    <tr>
-                      <th>Nombre</th>
-                      <!-- <th>Piso</th>
-                      <th>Orientación</th>
-                      <th>N° Parqueaderos</th>
-                      <th>Estado</th>
-                      <th>Fecha de creación</th> -->
-                    </tr>
-                  </tfoot>
-                  <tbody>
-                    {% for floor in parkinglots %}
-                    <tr>
-                      <td>{{ floor.name }}</td>
-                      <!-- <td>{{ floor.floor }}</td>
-                      <td>{{ floor.orientation }}</td>
-                      <td>{{ floor.numberparq }}</td>
-                      <td>
-                        {% if floor.status %}
-                        <span class="badge badge-success">Activo</span>
-                        {% else %}
-                        <span class="badge badge-danger">Activo</span>
-                        {% endif %}
-                      </td>
+          </div>
+          <div class="col-md-4 col-sm-12">
+            <div class="table-responsive">
+              <table
+                id="multi-filter-select"
+                class="display table table-striped table-hover"
+              >
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <!-- <th>Piso</th>
+                    <th>Orientación</th>
+                    <th>N° Parqueaderos</th>
+                    <th>Estado</th>
+                    <th>Fecha de creación</th> -->
+                  </tr>
+                </thead>
+                <tfoot>
+                  <tr>
+                    <th>Nombre</th>
+                    <!-- <th>Piso</th>
+                    <th>Orientación</th>
+                    <th>N° Parqueaderos</th>
+                    <th>Estado</th>
+                    <th>Fecha de creación</th> -->
+                  </tr>
+                </tfoot>
+                <tbody>
+                  {% for floor in parkinglots %}
+                  <tr>
+                    <td>{{ floor.name }}</td>
+                    <!-- <td>{{ floor.floor }}</td>
+                    <td>{{ floor.orientation }}</td>
+                    <td>{{ floor.numberparq }}</td>
+                    <td>
+                      {% if floor.status %}
+                      <span class="badge badge-success">Activo</span>
+                      {% else %}
+                      <span class="badge badge-danger">Activo</span>
+                      {% endif %}
+                    </td>
 
-                      <td>{{ floor.created_at|date:"d/m/Y" }}</td> -->
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              </div>
+                    <td>{{ floor.created_at|date:"d/m/Y" }}</td> -->
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

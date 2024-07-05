@@ -7,6 +7,7 @@ def floor(request):
     floors = Floors.objects.all()
     return render(request, 'floors/index.html', {
         'title': 'Pisos',
+        'breadcrumb': ['Maestras', 'Pisos'],
         'data': floors
     })
 
@@ -16,6 +17,7 @@ def parkinglot(request):
 
     return render(request, 'parkinglots/index.html', {
         'title': 'Estacionamientos',
+        'breadcrumb': ['Maestras', 'Estacionamientos'],
         'floors': floors,
         'parkinglots': parkinglots,
     })
