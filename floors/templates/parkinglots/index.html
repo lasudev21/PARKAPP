@@ -1,4 +1,45 @@
 {% extends "layouts/layout.html" %} {% block content %} {% load static %}
+
+<style>
+  #simulate {
+    display: flex;
+    /* justify-content: center; */
+    align-items: center;
+    height: 100%;
+    overflow-x: auto;
+  }
+
+  table tr td {
+    min-width: 85px;
+    width: auto !important;
+  }
+
+  .map-table {
+    border-collapse: separate;
+    border-spacing: 10px; /* Espacio entre celdas */
+  }
+
+  .map-cell {
+    width: 50px; /* Ancho de cada celda */
+    height: 50px; /* Altura de cada celda */
+    text-align: center;
+    line-height: 50px; /* Centrar contenido verticalmente */
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px; /* Bordes redondeados */
+    cursor: pointer; /* Cambia el cursor al pasar sobre la celda */
+    transition: background-color 0.3s ease; /* Transición suave del color de fondo */
+  }
+
+  .header {
+    font-weight: bold;
+  }
+
+  .activeField {
+    background-color: #28a745; /* Fondo verde cuando tiene la clase 'activeField' */
+  }
+</style>
+
 <div class="page-inner">
   <div class="page-header">
     <h3 class="fw-bold mb-3">Estacionamientos</h3>
@@ -28,101 +69,369 @@
         <div class="card-header">
           <div class="d-flex align-items-center">
             <h4 class="card-title">Generador de Estacionamientos</h4>
-            <!-- <button
+            <button
               class="btn btn-primary btn-round ms-auto"
               data-bs-toggle="modal"
               data-bs-target="#addRowModal"
+              id="savesimulation"
             >
-              <i class="fa fa-plus"></i>
-              Agregar
-            </button> -->
+              <i class="fa fa-save"></i>
+              Guardar simulación
+            </button>
           </div>
         </div>
         <div class="card-body">
           <div class="row">
             <div class="col-md-8 col-sm-12">
-              <form class="row">
-                <div class="col-md-6">
+              <form
+                id="matrixForm"
+                class="row"
+              >
+                <div class="col-md-3">
                   <div class="mb-3">
-                    <label
-                      for="floor"
-                      class="form-label"
-                      >Piso</label
+                    <div class="form-floating">
+                      <select
+                        id="floor"
+                        class="form-select form-select-sm"
+                        aria-label=".form-select-sm example"
+                      >
+                        {% for floor in floors %}
+                        <option value="{{ floor.id }}">{{ floor.name}}</option>
+                        {% endfor %}
+                      </select>
+                      <label
+                        for="floor"
+                        class="fw-bold"
+                        >Piso</label
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="mb-3">
+                    <div class="form-floating">
+                      <select
+                        id="orientation"
+                        class="form-select form-select-sm"
+                        aria-label=".form-select-sm example"
+                      >
+                        <option value="HORIZONTAL">Horizontal</option>
+                        <option value="VERTICAL">Vertical</option>
+                      </select>
+                      <label
+                        for="orientation"
+                        class="fw-bold"
+                        >Orientación</label
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="mb-3">
+                    <div class="form-floating">
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="rows"
+                        value="5"
+                      />
+                      <label
+                        for="rows"
+                        class="fw-bold"
+                        >N° Filas</label
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="mb-3">
+                    <div class="form-floating">
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="numberparq"
+                        value="5"
+                        required
+                      />
+                      <label
+                        for="numberparq"
+                        class="fw-bold"
+                        >Espacios por fila</label
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4 ms-auto">
+                  <div class="d-grid gap-3">
+                    <button
+                      class="btn btn-secondary"
+                      type="submit"
+                      id="simulation"
                     >
-                    <select
-                      id="floor"
-                      class="form-select form-select-sm"
-                      aria-label=".form-select-sm example"
-                    >
-                      {% for floor in floors %}
-                      <option value="{{ floor.id }}">{{ floor.name}}</option>
-                      {% endfor %}
-                    </select>
+                      Simular
+                    </button>
                   </div>
                 </div>
               </form>
+              <div class="row">
+                <div
+                  id="simulate"
+                  class="mt-3"
+                ></div>
+              </div>
             </div>
-            <div class="col-md-4 col-sm-12">Lista</div>
-          </div>
-
-          <!-- <div class="table-responsive">
-            <table
-              id="multi-filter-select"
-              class="display table table-striped table-hover"
-            >
-              <thead>
-                <tr>
-                  <th>Nombre</th>
-                  <th>Piso</th>
-                  <th>Orientación</th>
-                  <th>N° Parqueaderos</th>
-                  <th>Estado</th>
-                  <th>Fecha de creación</th>
-                </tr>
-              </thead>
-              <tfoot>
-                <tr>
-                  <th>Nombre</th>
-                  <th>Piso</th>
-                  <th>Orientación</th>
-                  <th>N° Parqueaderos</th>
-                  <th>Estado</th>
-                  <th>Fecha de creación</th>
-                </tr>
-              </tfoot>
-              <tbody>
-                {% for floor in data %}
-                <tr>
-                    <td>{{ floor.name }}</td>
-                    <td>{{ floor.floor }}</td>
-                    <td>{{ floor.orientation }}</td>
-                    <td>{{ floor.numberparq }}</td>
-                    <td>
-                        {% if floor.status %} 
+            <div class="col-md-4 col-sm-12">
+              <div class="table-responsive">
+                <table
+                  id="multi-filter-select"
+                  class="display table table-striped table-hover"
+                >
+                  <thead>
+                    <tr>
+                      <th>Nombre</th>
+                      <!-- <th>Piso</th>
+                      <th>Orientación</th>
+                      <th>N° Parqueaderos</th>
+                      <th>Estado</th>
+                      <th>Fecha de creación</th> -->
+                    </tr>
+                  </thead>
+                  <tfoot>
+                    <tr>
+                      <th>Nombre</th>
+                      <!-- <th>Piso</th>
+                      <th>Orientación</th>
+                      <th>N° Parqueaderos</th>
+                      <th>Estado</th>
+                      <th>Fecha de creación</th> -->
+                    </tr>
+                  </tfoot>
+                  <tbody>
+                    {% for floor in parkinglots %}
+                    <tr>
+                      <td>{{ floor.name }}</td>
+                      <!-- <td>{{ floor.floor }}</td>
+                      <td>{{ floor.orientation }}</td>
+                      <td>{{ floor.numberparq }}</td>
+                      <td>
+                        {% if floor.status %}
                         <span class="badge badge-success">Activo</span>
-                        {% else %} 
+                        {% else %}
                         <span class="badge badge-danger">Activo</span>
                         {% endif %}
-                    <td>{{ floor.created_at|date:"d/m/Y" }}</td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div> -->
+                      </td>
+
+                      <td>{{ floor.created_at|date:"d/m/Y" }}</td> -->
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
+<script src="{% static 'js/core/jquery-3.7.1.min.js' %}"></script>
+
 <script>
+  document.getElementById("floor").addEventListener("change", function () {
+    var selectedOption = this.value;
+    console.log("Selected option:", selectedOption);
+    // Aquí puedes agregar más lógica según lo necesites
+  });
+
   document
-    .getElementById("floor")
-    .addEventListener("change", function () {
-      var selectedOption = this.value;
-      console.log("Selected option:", selectedOption);
-      // Aquí puedes agregar más lógica según lo necesites
+    .getElementById("matrixForm")
+    .addEventListener("submit", function (event) {
+      event.preventDefault(); // Evitar el envío del formulario
+
+      var rowsInput = document.getElementById("rows");
+      var colsInput = document.getElementById("numberparq");
+
+      var rows = parseInt(rowsInput.value);
+      var cols = parseInt(colsInput.value);
+
+      var orientation = document.getElementById("orientation").value;
+      var floor = document.getElementById("floor").value;
+      // var numberparq = document.getElementById("numberparq").value;
+
+      console.log(floor, orientation, rows, cols);
+      generateMatrix(rows, cols, orientation, floor);
+      // generateMatrixV1(rows, cols, orientation, floor);
     });
+
+  // document.getElementById("simulation").onclick = function () {};
+
+  function generateMatrix(rows, cols, orientation, floor) {
+    var table = document.createElement("table");
+    table.classList.add("table", "table-bordered", "table-hover", "map-table");
+
+    if (orientation === "HORIZONTAL") {
+      for (var i = 0; i < rows; i++) {
+        var row = document.createElement("tr");
+
+        // Crear una celda para el número de fila
+        var rowHeader = document.createElement("td");
+        rowHeader.textContent = `Fila N° ${i + 1}`;
+        rowHeader.classList.add("map-cell", "text-center");
+        row.appendChild(rowHeader);
+
+        for (var j = 0; j < cols; j++) {
+          var cell = document.createElement("td");
+          cell.classList.add("map-cell", "text-center", "activeField", "pqEst"); // Agregar clase 'map-cell' para cada celda
+
+          cell.textContent = `P${floor}_F${i + 1}-E${j + 1}`; // Texto de ejemplo
+
+          // Agregar evento onclick a la celda
+          cell.onclick = function () {
+            toggleCellBackground(this); // Llamar a la función para cambiar el color de fondo de la celda
+          };
+
+          row.appendChild(cell);
+        }
+
+        table.appendChild(row);
+      }
+    } else if (orientation === "VERTICAL") {
+      var headerRow = document.createElement("tr");
+
+      for (var j = 0; j < rows; j++) {
+        var colHeader = document.createElement("td");
+        colHeader.textContent = `Fila N° ${j + 1}`;
+        colHeader.classList.add("header");
+        headerRow.appendChild(colHeader);
+      }
+      table.appendChild(headerRow);
+
+      for (var i = 0; i < cols; i++) {
+        var row = document.createElement("tr");
+
+        for (var j = 0; j < rows; j++) {
+          var cell = document.createElement("td");
+          cell.classList.add("map-cell", "text-center", "activeField", "pqEst"); // Agregar clase 'map-cell' para cada celda
+
+          cell.textContent = `P${floor}_F${j + 1}-E${i + 1}`; // Texto de ejemplo
+
+          // Agregar evento onclick a la celda
+          cell.onclick = function () {
+            toggleCellBackground(this); // Llamar a la función para cambiar el color de fondo de la celda
+          };
+
+          row.appendChild(cell);
+        }
+        table.appendChild(row);
+      }
+    }
+
+    // Limpiar el contenedor antes de agregar la nueva matriz
+    var oldMatrix = document.getElementById("simulate");
+    oldMatrix.innerHTML = ""; // Limpiar el contenido anterior
+    oldMatrix.appendChild(table);
+  }
+
+  function toggleCellBackground(cell) {
+    // Alternar la clase 'activeField' para cambiar el color de fondo de la celda
+    cell.classList.toggle("activeField");
+  }
+
+  var SweetAlert2Demo = (function () {
+    var initDemos = function () {
+      $("#savesimulation").click(function (e) {
+        swal({
+          title: "¡Atención!",
+          text: "Está seguro que desea guardar la simulación?",
+          type: "warning",
+          buttons: {
+            confirm: {
+              text: "Si, guardar",
+              className: "btn btn-success",
+            },
+            cancel: {
+              visible: true,
+              className: "btn btn-danger",
+            },
+          },
+        }).then((Acept) => {
+          if (Acept) {
+            var orientation = document.getElementById("orientation").value;
+            var numberparq = document.getElementById("numberparq").value;
+            var numberrows = document.getElementById("rows").value;
+            var selectElement = document.getElementById("floor");
+            var selectedIndex = selectElement.selectedIndex;
+            var selectedText =
+              selectElement.options[selectedIndex].text.toUpperCase();
+            var floor = selectElement.options[selectedIndex].value;
+            var espacios = document.getElementsByClassName('pqEst');
+            $.ajax({
+              url: '{% url "savesimulation" %}', // URL definida en Django
+              type: "POST", // Método de la solicitud (GET, POST, etc.)
+              data: {
+                name: `${selectedText} - ${orientation}_${numberrows}_${numberparq}`,
+                floor,
+                orientation,
+                numberparq,
+                numberrows,
+              },
+              success: function (response) {
+                if (response.success) {
+                  $.notify(
+                    {
+                      icon: "icon-bell",
+                      title: "¡Guardado!",
+                      message: response.message,
+                    },
+                    {
+                      type: "success",
+                      placement: {
+                        from: "top",
+                        align: "right",
+                      },
+                      time: 1000,
+                    }
+                  );
+                } else {
+                  $.notify(
+                    {
+                      icon: "icon-bell",
+                      title: "¡Upssss algo ha pasado!",
+                      message: response.message,
+                    },
+                    {
+                      type: "danger",
+                      placement: {
+                        from: "top",
+                        align: "right",
+                      },
+                      time: 1000,
+                    }
+                  );
+                }
+              },
+              error: function (error) {
+                alert("Error al ejecutar la acción"); // Mostrar mensaje de error si ocurre algún problema
+              },
+            });
+          } else {
+            swal.close();
+          }
+        });
+      });
+    };
+
+    return {
+      init: function () {
+        initDemos();
+      },
+    };
+  })();
+
+  jQuery(document).ready(function () {
+    SweetAlert2Demo.init();
+  });
 </script>
 
 {% endblock content %}

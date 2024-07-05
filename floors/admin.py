@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import Floors
-from .models import Rows
+from .models import ParkingLots
 
 class FloorAdmin(admin.ModelAdmin):
     readonly_fields = ('created_at', 'updated_at')
@@ -9,7 +9,7 @@ class FloorAdmin(admin.ModelAdmin):
     list_display = ('name', 'created_at', 'updated_at')
     ordering = ('created_at',)
 
-class RowsAdmin(admin.ModelAdmin):
+class ParkingLotsAdmin(admin.ModelAdmin):
     readonly_fields = ('created_at', 'updated_at',)
     search_fields = ('name', 'floor', 'orientation')
     list_filter = ('floor',)
@@ -23,4 +23,4 @@ class RowsAdmin(admin.ModelAdmin):
     #     obj.save()
 
 admin.site.register(Floors, FloorAdmin)
-admin.site.register(Rows, RowsAdmin)
+admin.site.register(ParkingLots, ParkingLotsAdmin)

@@ -130,11 +130,6 @@
                       </a>
                     </li>
                     <li>
-                      <a href="{% url 'rows' %}">
-                        <span class="sub-item">Filas</span>
-                      </a>
-                    </li>
-                    <li>
                       <a href="{% url 'parkinglots' %}">
                         <span class="sub-item">Estacionamientos</span>
                       </a>
@@ -301,12 +296,9 @@
         <footer class="footer">
           <div class="container-fluid d-flex justify-content-between">
             <nav class="pull-left">
-              <ul class="nav">
-              </ul>
+              <ul class="nav"></ul>
             </nav>
-            <div class="copyright">
-              2024, Larry Suarez, Vanesa Mosquera
-            </div>
+            <div class="copyright">2024, Larry Suarez, Vanesa Mosquera</div>
           </div>
         </footer>
       </div>
@@ -346,7 +338,40 @@
 
     <!-- Kaiadmin DEMO methods, don't include it in your project! -->
     <script src="{% static 'js/setting-demo.js' %}"></script>
+    <script src="{% static 'js/setting-demo2.js' %}"></script>
     <script src="{% static 'js/demo.js' %}"></script>
+
+    <script>
+      // Obtener el token CSRF desde la cookie
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+          const cookies = document.cookie.split(";");
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Buscar el token CSRF en la cookie
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+              cookieValue = decodeURIComponent(
+                cookie.substring(name.length + 1)
+              );
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+      const csrftoken = getCookie("csrftoken");
+
+      // Configurar jQuery para enviar el token CSRF con cada solicitud AJAX
+      $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+          if (!this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+          }
+        },
+      });
+    </script>
+
     <script>
       $("#lineChart").sparkline([102, 109, 120, 99, 110, 105, 115], {
         type: "line",

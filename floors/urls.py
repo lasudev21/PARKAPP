@@ -1,9 +1,9 @@
 from django.urls import path
 
-from .views import floor, row, parkinglot
+from .views import floor, parkinglot, saveSimulation
 
 urlpatterns = [
     path('floors/', floor, name='floors'),
-    path('rows/', row, name='rows'),
     path('parkinglots/', parkinglot, name='parkinglots'),
+    path('savesimulation/', saveSimulation, name='savesimulation'),
 ]
