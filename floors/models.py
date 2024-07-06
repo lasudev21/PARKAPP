@@ -41,3 +41,18 @@ class ParkingLots(models.Model):
     
     def __str__(self):
         return str(self.name)
+
+class Spaces(models.Model):
+    name = models.CharField(default="", max_length=50, verbose_name='Nombre')
+    status = models.BooleanField(default=True, verbose_name='Activo?')
+    busy = models.BooleanField(default=False, verbose_name='Ocupado?')
+    parkinglot = models.ForeignKey(ParkingLots, editable= True, verbose_name="Estacionamiento", on_delete=models.PROTECT, blank= False, null= False)
+    created_at = models.DateTimeField(auto_now=True, verbose_name='Creado')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Editado')
+    
+    class Meta:
+        verbose_name = 'Espacio'
+        verbose_name_plural = 'Espacios'
+    
+    def __str__(self):
+        return str(self.name)

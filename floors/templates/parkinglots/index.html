@@ -38,6 +38,11 @@
   .activeField {
     background-color: #28a745; /* Fondo verde cuando tiene la clase 'activeField' */
   }
+
+  .disableFlied {
+    background-color: #6b6b6bd2;
+    cursor: none !important; /* Fondo verde cuando tiene la clase 'activeField' */
+  }
 </style>
 
 <div class="row">
@@ -72,8 +77,9 @@
                       class="form-select form-select-sm"
                       aria-label=".form-select-sm example"
                     >
+                      <option value="0">seleccione una opción...</option>
                       {% for floor in floors %}
-                      <option value="{{ floor.id }}">{{ floor.name}}</option>
+                      <option value="{{ floor.id }}">{{ floor.name }}</option>
                       {% endfor %}
                     </select>
                     <label
@@ -110,7 +116,6 @@
                       type="number"
                       class="form-control"
                       id="rows"
-                      value="5"
                     />
                     <label
                       for="rows"
@@ -127,7 +132,6 @@
                       type="number"
                       class="form-control"
                       id="numberparq"
-                      value="5"
                       required
                     />
                     <label
@@ -166,39 +170,17 @@
                 <thead>
                   <tr>
                     <th>Nombre</th>
-                    <!-- <th>Piso</th>
-                    <th>Orientación</th>
-                    <th>N° Parqueaderos</th>
-                    <th>Estado</th>
-                    <th>Fecha de creación</th> -->
                   </tr>
                 </thead>
                 <tfoot>
                   <tr>
                     <th>Nombre</th>
-                    <!-- <th>Piso</th>
-                    <th>Orientación</th>
-                    <th>N° Parqueaderos</th>
-                    <th>Estado</th>
-                    <th>Fecha de creación</th> -->
                   </tr>
                 </tfoot>
                 <tbody>
                   {% for floor in parkinglots %}
                   <tr>
                     <td>{{ floor.name }}</td>
-                    <!-- <td>{{ floor.floor }}</td>
-                    <td>{{ floor.orientation }}</td>
-                    <td>{{ floor.numberparq }}</td>
-                    <td>
-                      {% if floor.status %}
-                      <span class="badge badge-success">Activo</span>
-                      {% else %}
-                      <span class="badge badge-danger">Activo</span>
-                      {% endif %}
-                    </td>
-
-                    <td>{{ floor.created_at|date:"d/m/Y" }}</td> -->
                   </tr>
                   {% endfor %}
                 </tbody>
@@ -215,9 +197,37 @@
 
 <script>
   document.getElementById("floor").addEventListener("change", function () {
-    var selectedOption = this.value;
-    console.log("Selected option:", selectedOption);
-    // Aquí puedes agregar más lógica según lo necesites
+    var floor = this.value;
+    console.log("Selected option:", floor);
+    $.ajax({
+      url: `{% url "simulation" %}`,
+      type: "POST",
+      data: {
+        floor,
+      },
+      success: function (response) {
+        clearData();
+        if (response.success) {
+          var orientation =
+            response.parkinglot.orientation == "H" ? "HORIZONTAL" : "VERTICAL";
+          document.getElementById("numberparq").value =
+            response.parkinglot.numberparq;
+          document.getElementById("rows").value =
+            response.parkinglot.numberrows;
+          document.getElementById("orientation").value = orientation;
+          generateMatrix(
+            response.parkinglot.numberrows,
+            response.parkinglot.numberparq,
+            orientation,
+            floor,
+            response.spaces
+          );
+        }
+      },
+      error: function (error) {
+        alert("Error al ejecutar la acción"); // Mostrar mensaje de error si ocurre algún problema
+      },
+    });
   });
 
   document
@@ -233,16 +243,11 @@
 
       var orientation = document.getElementById("orientation").value;
       var floor = document.getElementById("floor").value;
-      // var numberparq = document.getElementById("numberparq").value;
 
-      console.log(floor, orientation, rows, cols);
       generateMatrix(rows, cols, orientation, floor);
-      // generateMatrixV1(rows, cols, orientation, floor);
     });
 
-  // document.getElementById("simulation").onclick = function () {};
-
-  function generateMatrix(rows, cols, orientation, floor) {
+  function generateMatrix(rows, cols, orientation, floor, spaces = []) {
     var table = document.createElement("table");
     table.classList.add("table", "table-bordered", "table-hover", "map-table");
 
@@ -253,18 +258,27 @@
         // Crear una celda para el número de fila
         var rowHeader = document.createElement("td");
         rowHeader.textContent = `Fila N° ${i + 1}`;
-        rowHeader.classList.add("map-cell", "text-center");
+        rowHeader.classList.add("header");
         row.appendChild(rowHeader);
 
         for (var j = 0; j < cols; j++) {
           var cell = document.createElement("td");
-          cell.classList.add("map-cell", "text-center", "activeField", "pqEst"); // Agregar clase 'map-cell' para cada celda
+          var name = `P${floor}_F${i + 1}-E${j + 1}`;
 
-          cell.textContent = `P${floor}_F${i + 1}-E${j + 1}`; // Texto de ejemplo
+          if (existRegister(spaces, name))
+            cell.classList.add(
+              "map-cell",
+              "text-center",
+              "activeField",
+              "pqEst"
+            );
+          else cell.classList.add("map-cell", "text-center", "pqEst");
+
+          cell.textContent = name; // Texto de ejemplo
 
           // Agregar evento onclick a la celda
           cell.onclick = function () {
-            toggleCellBackground(this); // Llamar a la función para cambiar el color de fondo de la celda
+            toggleCellBackground(this);
           };
 
           row.appendChild(cell);
@@ -288,13 +302,22 @@
 
         for (var j = 0; j < rows; j++) {
           var cell = document.createElement("td");
-          cell.classList.add("map-cell", "text-center", "activeField", "pqEst"); // Agregar clase 'map-cell' para cada celda
 
-          cell.textContent = `P${floor}_F${j + 1}-E${i + 1}`; // Texto de ejemplo
+          var name = `P${floor}_F${j + 1}-E${i + 1}`;
+          if (existRegister(spaces, name))
+            cell.classList.add(
+              "map-cell",
+              "text-center",
+              "activeField",
+              "pqEst"
+            );
+          else cell.classList.add("map-cell", "text-center", "pqEst");
+
+          cell.textContent = name;
 
           // Agregar evento onclick a la celda
           cell.onclick = function () {
-            toggleCellBackground(this); // Llamar a la función para cambiar el color de fondo de la celda
+            toggleCellBackground(this);
           };
 
           row.appendChild(cell);
@@ -305,15 +328,27 @@
 
     // Limpiar el contenedor antes de agregar la nueva matriz
     var oldMatrix = document.getElementById("simulate");
-    oldMatrix.innerHTML = ""; // Limpiar el contenido anterior
+    oldMatrix.innerHTML = "";
     oldMatrix.appendChild(table);
   }
 
   function toggleCellBackground(cell) {
-    // Alternar la clase 'activeField' para cambiar el color de fondo de la celda
     cell.classList.toggle("activeField");
   }
 
+  function existRegister(spaces, value) {
+    var space = spaces.find((space) => space.name === value);
+    if (space) {
+      return space.status;
+    } else return true;
+  }
+
+  function clearData() {
+    document.getElementById("simulate").innerHTML = "";
+    document.getElementById("numberparq").value = null;
+    document.getElementById("rows").value = null;
+    document.getElementById("orientation").value = "HORIZONTAL";
+  }
   var SweetAlert2Demo = (function () {
     var initDemos = function () {
       $("#savesimulation").click(function (e) {
@@ -341,16 +376,26 @@
             var selectedText =
               selectElement.options[selectedIndex].text.toUpperCase();
             var floor = selectElement.options[selectedIndex].value;
-            var espacios = document.getElementsByClassName('pqEst');
+            var pqEst = document.getElementsByClassName("pqEst");
+            var spaces = [];
+            for (let index = 0; index < pqEst.length; index++) {
+              const element = pqEst[index];
+              spaces.push({
+                name: element.innerText,
+                status: element.classList.contains("activeField"),
+              });
+            }
+            console.log(spaces);
             $.ajax({
-              url: '{% url "savesimulation" %}', // URL definida en Django
-              type: "POST", // Método de la solicitud (GET, POST, etc.)
+              url: '{% url "savesimulation" %}',
+              type: "POST",
               data: {
                 name: `${selectedText} - ${orientation}_${numberrows}_${numberparq}`,
                 floor,
                 orientation,
                 numberparq,
                 numberrows,
+                spaces: JSON.stringify(spaces),
               },
               success: function (response) {
                 if (response.success) {
@@ -369,6 +414,7 @@
                       time: 1000,
                     }
                   );
+                  clearData();
                 } else {
                   $.notify(
                     {
