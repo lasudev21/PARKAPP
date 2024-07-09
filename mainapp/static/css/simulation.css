@@ -1,0 +1,46 @@
+#simulate {
+  display: flex;
+  /* justify-content: center; */
+  align-items: center;
+  height: 100%;
+  overflow-x: auto;
+}
+
+table tr td {
+  min-width: 85px;
+  width: auto !important;
+}
+
+.map-table {
+  border-collapse: separate;
+  border-spacing: 10px; /* Espacio entre celdas */
+}
+
+.map-cell {
+  width: 50px; /* Ancho de cada celda */
+  height: 50px; /* Altura de cada celda */
+  text-align: center;
+  line-height: 50px; /* Centrar contenido verticalmente */
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px; /* Bordes redondeados */
+  cursor: pointer; /* Cambia el cursor al pasar sobre la celda */
+  transition: background-color 0.3s ease; /* Transición suave del color de fondo */
+}
+
+.header {
+  font-weight: bold;
+}
+
+.activeField {
+  background-color: #28a745; 
+}
+
+.busyField {
+  background-color: #E67E22; 
+}
+
+.disableFlied {
+  background-color: #6b6b6bd2;
+  cursor: none !important; 
+}

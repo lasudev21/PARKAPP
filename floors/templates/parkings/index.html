@@ -1,0 +1,164 @@
+{% extends "layouts/layout.html" %} {% block content %} {% load static %}
+<link
+  rel="stylesheet"
+  href="{% static 'css/simulation.css' %}"
+/>
+
+<form
+  id="plate"
+  class="row mb-3"
+  method="POST"
+>
+  {% csrf_token %}
+  <div class="col-md-3">
+    <div class="mb-3">
+      <div class="form-floating form-floating-custom">
+        <input
+          type="text"
+          class="form-control"
+          id="numberparq"
+          required
+        />
+        <label
+          for="numberparq"
+          class="fw-bold"
+          >Placa</label
+        >
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="d-grid gap-3">
+      <button
+        class="btn btn-secondary"
+        type="submit"
+        id="simulation"
+      >
+        Ingresar
+      </button>
+    </div>
+  </div>
+</form>
+
+<div id="dataDiv"></div>
+
+<script src="{% static 'js/core/jquery-3.7.1.min.js' %}"></script>
+<script src="{% static 'js/plugin/bootstrap-notify/bootstrap-notify.min.js' %}"></script>
+<script src="{% static 'js/utils/simulation.js' %}"></script>
+
+{% if messages %} {% for message in messages %}
+
+<script>
+  $.notify(
+    {
+      icon: "icon-bell",
+      title: "¡Correcto!",
+      message: '{{message}}',
+    },
+    {
+      type: "success",
+      placement: {
+        from: "top",
+        align: "right",
+      },
+      time: 1000,
+    }
+  );
+</script>
+{% endfor %} {% endif %}
+
+<script>
+  var parkings = JSON.parse("{{ parkings|safe|escapejs }}");
+  var dataDiv = document.getElementById("dataDiv");
+
+  parkings.forEach((paking) => {
+    var orientation = paking.orientation == "H" ? "HORIZONTAL" : "VERTICAL";
+
+    if (paking.spaces.length > 0) {
+      var p4 = document.createElement("p4");
+      p4.classList.add("card-title", "mb-3");
+      p4.innerText = paking.name;
+
+      var divCard = document.createElement("div");
+      divCard.classList.add("card");
+
+      var divCardBody = document.createElement("div");
+      divCardBody.classList.add("card-body");
+
+      var divTable = document.createElement("div");
+      divTable.id = paking.name;
+      divTable.classList.add("mb-4");
+
+      divCardBody.appendChild(p4);
+      divCardBody.appendChild(divTable);
+      divCard.appendChild(divCardBody);
+      dataDiv.appendChild(divCard);
+
+      generateMatrix(
+        paking.numberrows,
+        paking.numberparq,
+        orientation,
+        paking.floor,
+        paking.spaces,
+        paking.name,
+        false
+      );
+    }
+  });
+
+  //   document.getElementById("plate").addEventListener("submit", function (event) {
+  //     //   event.preventDefault(); // Evitar el envío del formulario
+  //     $.ajax({
+  //       url: '{% url "parkings" %}',
+  //       type: "POST",
+  //       data: {
+  //         // name: `${selectedText} - ${orientation}_${numberrows}_${numberparq}`,
+  //         // floor,
+  //         // orientation,
+  //         // numberparq,
+  //         // numberrows,
+  //         // spaces: JSON.stringify(spaces),
+  //       },
+  //       success: function (response) {
+  //         // if (response.success) {
+  //         //   $.notify(
+  //         //     {
+  //         //       icon: "icon-bell",
+  //         //       title: "¡Guardado!",
+  //         //       message: response.message,
+  //         //     },
+  //         //     {
+  //         //       type: "success",
+  //         //       placement: {
+  //         //         from: "top",
+  //         //         align: "right",
+  //         //       },
+  //         //       time: 1000,
+  //         //     }
+  //         //   );
+  //         //   clearData();
+  //         // } else {
+  //         //   $.notify(
+  //         //     {
+  //         //       icon: "icon-bell",
+  //         //       title: "¡Upssss algo ha pasado!",
+  //         //       message: response.message,
+  //         //     },
+  //         //     {
+  //         //       type: "danger",
+  //         //       placement: {
+  //         //         from: "top",
+  //         //         align: "right",
+  //         //       },
+  //         //       time: 1000,
+  //         //     }
+  //         //   );
+  //         // }
+  //       },
+  //       error: function (error) {
+  //         alert("Error al ejecutar la acción"); // Mostrar mensaje de error si ocurre algún problema
+  //       },
+  //     });
+  //   });
+</script>
+{% endblock content %}

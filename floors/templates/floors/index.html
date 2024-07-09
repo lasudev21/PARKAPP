@@ -26,6 +26,7 @@
                 <th>Nombre</th>
                 <th>Estado</th>
                 <th>Fecha de creación</th>
+                <th>acciones</th>
               </tr>
             </thead>
             <tfoot>
@@ -33,20 +34,42 @@
                 <th>Nombre</th>
                 <th>Estado</th>
                 <th>Fecha de creación</th>
+                <th></th>
               </tr>
             </tfoot>
             <tbody>
               {% for floor in data %}
               <tr>
-                  <td>{{ floor.name }}</td>
-                  <td>
-                      {% if floor.status %} 
-                      <span class="badge badge-success">Activo</span>
-                      {% else %} 
-                      <span class="badge badge-danger">Activo</span>
-                      {% endif %}
-                  <td>{{ floor.created_at|date:"d/m/Y" }}</td>
-                </tr>
+                <td>{{ floor.name }}</td>
+                <td>
+                  {% if floor.status %}
+                  <span class="badge badge-success">Activo</span>
+                  {% else %}
+                  <span class="badge badge-danger">Inactivo</span>
+                  {% endif %}
+                </td>
+                <td>{{ floor.created_at|date:"d/m/Y" }}</td>
+                <td>
+                  <div class="form-button-action">
+                    <button
+                      type="button"
+                      data-bs-toggle="tooltip"
+                      onclick="editRow(`{{ floor.id }}`, `{{ floor.name }}`)"
+                      class="btn btn-link btn-primary"
+                    >
+                      <i class="fa fa-edit"></i>
+                    </button>
+                    <button
+                      type="button"
+                      data-bs-toggle="tooltip"
+                      onclick="deleteRow(`{{ floor.id }}`)"
+                      class="btn btn-link btn-danger"
+                    >
+                      <i class="fa fa-times"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
               {% endfor %}
             </tbody>
           </table>
@@ -56,4 +79,198 @@
   </div>
 </div>
 
+<div
+  class="modal fade"
+  id="addRowModal"
+  tabindex="-1"
+  role="dialog"
+  aria-hidden="true"
+>
+  <div
+    class="modal-dialog"
+    role="document"
+  >
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title">
+          <span class="fw-mediumbold"> New</span>
+          <span class="fw-light"> Row </span>
+        </h5>
+        <button
+          type="button"
+          class="close"
+          id="xCloseButton"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="form-group form-group-default">
+                <label>Nombre</label>
+                <input
+                  id="name"
+                  type="text"
+                  class="form-control"
+                />
+                <input
+                  id="id"
+                  value="0"
+                  type="text"
+                  class="form-control"
+                  hidden
+                />
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer border-0">
+        <button
+          type="button"
+          id="addRowButton"
+          class="btn btn-primary"
+        >
+          Guardar
+        </button>
+        <button
+          type="button"
+          id="closeRowButton"
+          class="btn btn-danger"
+          data-dismiss="modal"
+        >
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/core/jquery-3.7.1.min.js' %}"></script>
+
+<script>
+  function editRow(id, name) {
+    document.getElementById("id").value = id;
+    document.getElementById("name").value = name;
+    $("#addRowModal").modal("show");
+  }
+
+  // function clearData(){
+  //   document.getElementById("id").value = null;
+  //   document.getElementById("name").value = null;
+  // }
+
+  function deleteRow(id) {
+    $.ajax({
+      url: '{% url "floors_delete" %}',
+      type: "POST",
+      data: {
+        id,
+      },
+      success: function (response) {
+        if (response.success) {
+          $.notify(
+            {
+              icon: "icon-bell",
+              title: "¡Eliminado!",
+              message: response.message,
+            },
+            {
+              type: "success",
+              placement: {
+                from: "top",
+                align: "right",
+              },
+              time: 1000,
+            }
+          );
+          $("#addRowModal").modal("hide");
+          setTimeout(function () {
+            location.reload();
+          }, 2000);
+        } else {
+          $.notify(
+            {
+              icon: "icon-bell",
+              title: "¡Upssss algo ha pasado!",
+              message: response.message,
+            },
+            {
+              type: "danger",
+              placement: {
+                from: "top",
+                align: "right",
+              },
+              time: 1000,
+            }
+          );
+        }
+      },
+      error: function (error) {
+        alert("Error al ejecutar la acción"); // Mostrar mensaje de error si ocurre algún problema
+      },
+    });
+  }
+
+  $("#addRowButton").click(function () {
+    $.ajax({
+      url: '{% url "floors" %}',
+      type: "POST",
+      data: {
+        name: document.getElementById("name").value,
+        id: document.getElementById("id").value,
+      },
+      success: function (response) {
+        if (response.success) {
+          $.notify(
+            {
+              icon: "icon-bell",
+              title: "¡Guardado!",
+              message: response.message,
+            },
+            {
+              type: "success",
+              placement: {
+                from: "top",
+                align: "right",
+              },
+              time: 1000,
+            }
+          );
+        } else {
+          $.notify(
+            {
+              icon: "icon-bell",
+              title: "¡Upssss algo ha pasado!",
+              message: response.message,
+            },
+            {
+              type: "danger",
+              placement: {
+                from: "top",
+                align: "right",
+              },
+              time: 1000,
+            }
+          );
+        }
+        $("#addRowModal").modal("hide");
+        setTimeout(function () {
+          location.reload();
+        }, 2000);
+      },
+      error: function (error) {
+        alert("Error al ejecutar la acción"); // Mostrar mensaje de error si ocurre algún problema
+      },
+    });
+  });
+
+  $("#closeRowButton, #xCloseButton").click(function () {
+    $("#addRowModal").modal("hide");
+  });
+</script>
 {% endblock content %}

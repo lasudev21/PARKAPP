@@ -1,190 +1,208 @@
 {% extends "layouts/layout.html" %} {% block content %} {% load static %}
 
-<style>
-  #simulate {
-    display: flex;
-    /* justify-content: center; */
-    align-items: center;
-    height: 100%;
-    overflow-x: auto;
-  }
-
-  table tr td {
-    min-width: 85px;
-    width: auto !important;
-  }
-
-  .map-table {
-    border-collapse: separate;
-    border-spacing: 10px; /* Espacio entre celdas */
-  }
-
-  .map-cell {
-    width: 50px; /* Ancho de cada celda */
-    height: 50px; /* Altura de cada celda */
-    text-align: center;
-    line-height: 50px; /* Centrar contenido verticalmente */
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 4px; /* Bordes redondeados */
-    cursor: pointer; /* Cambia el cursor al pasar sobre la celda */
-    transition: background-color 0.3s ease; /* Transición suave del color de fondo */
-  }
-
-  .header {
-    font-weight: bold;
-  }
-
-  .activeField {
-    background-color: #28a745; /* Fondo verde cuando tiene la clase 'activeField' */
-  }
-
-  .disableFlied {
-    background-color: #6b6b6bd2;
-    cursor: none !important; /* Fondo verde cuando tiene la clase 'activeField' */
-  }
-</style>
+<link
+  rel="stylesheet"
+  href="{% static 'css/simulation.css' %}"
+/>
 
 <div class="row">
   <div class="col-md-12">
     <div class="card">
-      <div class="card-header">
-        <div class="d-flex align-items-center">
-          <!-- <h4 class="card-title">Generador de Estacionamientos</h4> -->
-          <button
-            class="btn btn-primary btn-round ms-auto"
-            data-bs-toggle="modal"
-            data-bs-target="#addRowModal"
-            id="savesimulation"
-          >
-            <i class="fa fa-save"></i>
-            Guardar simulación
-          </button>
-        </div>
-      </div>
       <div class="card-body">
-        <div class="row">
-          <div class="col-md-8 col-sm-12">
-            <form
-              id="matrixForm"
-              class="row"
+        <ul
+          class="nav nav-tabs nav-line nav-color-secondary"
+          id="line-tab"
+          role="tablist"
+        >
+          <li class="nav-item">
+            <a
+              class="nav-link active"
+              id="line-home-tab"
+              data-bs-toggle="pill"
+              href="#line-home"
+              role="tab"
+              aria-controls="pills-home"
+              aria-selected="true"
+              >Simulador</a
             >
-              <div class="col-md-3">
-                <div class="mb-3">
-                  <div class="form-floating">
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              id="line-profile-tab"
+              data-bs-toggle="pill"
+              href="#line-profile"
+              role="tab"
+              aria-controls="pills-profile"
+              aria-selected="false"
+              >Listado</a
+            >
+          </li>
+        </ul>
+        <div
+          class="tab-content mt-3 mb-3"
+          id="line-tabContent"
+        >
+          <div
+            class="tab-pane fade show active"
+            id="line-home"
+            role="tabpanel"
+            aria-labelledby="line-home-tab"
+          >
+            <div class="col-md-12 col-sm-12 mt-4">
+              <form
+                id="matrixForm"
+                class="row"
+              >
+                <div class="col-md-3">
+                  <div class="form-floating form-floating-custom">
                     <select
+                      class="form-select"
                       id="floor"
-                      class="form-select form-select-sm"
-                      aria-label=".form-select-sm example"
+                      required
                     >
-                      <option value="0">seleccione una opción...</option>
+                      <option value="">Seleccione...</option>
                       {% for floor in floors %}
                       <option value="{{ floor.id }}">{{ floor.name }}</option>
                       {% endfor %}
                     </select>
-                    <label
-                      for="floor"
-                      class="fw-bold"
-                      >Piso</label
-                    >
+                    <label for="orientation">Planta</label>
                   </div>
                 </div>
-              </div>
-              <div class="col-md-3">
-                <div class="mb-3">
-                  <div class="form-floating">
+                <div class="col-md-3">
+                  <div class="form-floating form-floating-custom">
                     <select
+                      class="form-select"
                       id="orientation"
-                      class="form-select form-select-sm"
-                      aria-label=".form-select-sm example"
+                      required
                     >
                       <option value="HORIZONTAL">Horizontal</option>
                       <option value="VERTICAL">Vertical</option>
                     </select>
-                    <label
-                      for="orientation"
-                      class="fw-bold"
-                      >Orientación</label
-                    >
+                    <label for="orientation">Orientación</label>
                   </div>
                 </div>
-              </div>
-              <div class="col-md-3">
-                <div class="mb-3">
-                  <div class="form-floating">
-                    <input
-                      type="number"
-                      class="form-control"
-                      id="rows"
-                    />
-                    <label
-                      for="rows"
-                      class="fw-bold"
-                      >N° Filas</label
-                    >
+                <div class="col-md-3">
+                  <div class="mb-3">
+                    <div class="form-floating form-floating-custom">
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="rows"
+                      />
+                      <label
+                        for="rows"
+                        class="fw-bold"
+                        >N° Filas</label
+                      >
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div class="col-md-3">
-                <div class="mb-3">
-                  <div class="form-floating">
-                    <input
-                      type="number"
-                      class="form-control"
-                      id="numberparq"
-                      required
-                    />
-                    <label
-                      for="numberparq"
-                      class="fw-bold"
-                      >Espacios por fila</label
-                    >
+                <div class="col-md-3">
+                  <div class="mb-3">
+                    <div class="form-floating form-floating-custom">
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="numberparq"
+                        required
+                      />
+                      <label
+                        for="numberparq"
+                        class="fw-bold"
+                        >Espacios por fila</label
+                      >
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div class="col-md-4 ms-auto">
-                <div class="d-grid gap-3">
-                  <button
-                    class="btn btn-secondary"
-                    type="submit"
-                    id="simulation"
-                  >
-                    Simular
-                  </button>
+                <div class="col-md-2 ms-auto">
+                  <div class="d-grid gap-3">
+                    <button
+                      class="btn btn-secondary"
+                      type="submit"
+                      id="simulation"
+                    >
+                      <i class="fas fa-cogs"></i>
+                      Simular
+                    </button>
+                  </div>
+                </div>
+              </form>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="card-title">
+                    Información visual de la simulación
+                  </div>
+                  <hr />
+                  <div
+                    id="simulate"
+                    style="height: auto; min-height: 100px"
+                    class="mt-3"
+                  ></div>
                 </div>
               </div>
-            </form>
-            <div class="row">
-              <div
-                id="simulate"
-                class="mt-3"
-              ></div>
             </div>
           </div>
-          <div class="col-md-4 col-sm-12">
-            <div class="table-responsive">
-              <table
-                id="multi-filter-select"
-                class="display table table-striped table-hover"
+          <div
+            class="tab-pane fade"
+            id="line-profile"
+            role="tabpanel"
+            aria-labelledby="line-profile-tab"
+          >
+            <div class="col-md-12 col-sm-12">
+              <div class="table-responsive">
+                <table
+                  id="multi-filter-select"
+                  class="display table table-striped table-hover"
+                >
+                  <thead>
+                    <tr>
+                      <th>Nombre</th>
+                      <th>Piso</th>
+                      <th>Orientación</th>
+                      <th>N° filas</th>
+                      <th>Espacios por fila</th>
+                    </tr>
+                  </thead>
+                  <tfoot>
+                    <tr>
+                      <th>Nombre</th>
+                      <th>Piso</th>
+                      <th>Orientación</th>
+                      <th>N° filas</th>
+                      <th>Espacios por fila</th>
+                    </tr>
+                  </tfoot>
+                  <tbody>
+                    {% for floor in parkinglots %}
+                    <tr>
+                      <td>{{ floor.name }}</td>
+                      <td>{{ floor.floor }}</td>
+                      <td>{{ floor.orientation }}</td>
+                      <td>{{ floor.numberrows }}</td>
+                      <td>{{ floor.numberparq }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="col-md-12">
+          <div class="col-md-2">
+            <div class="d-grid gap-3">
+              <button
+                class="btn btn-success"
+                data-bs-toggle="modal"
+                data-bs-target="#addRowModal"
+                id="savesimulation"
               >
-                <thead>
-                  <tr>
-                    <th>Nombre</th>
-                  </tr>
-                </thead>
-                <tfoot>
-                  <tr>
-                    <th>Nombre</th>
-                  </tr>
-                </tfoot>
-                <tbody>
-                  {% for floor in parkinglots %}
-                  <tr>
-                    <td>{{ floor.name }}</td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
+                <i class="fa fa-save"></i>
+                Guardar
+              </button>
             </div>
           </div>
         </div>
@@ -194,11 +212,16 @@
 </div>
 
 <script src="{% static 'js/core/jquery-3.7.1.min.js' %}"></script>
+<script src="{% static 'js/utils/simulation.js' %}"></script>
 
 <script>
   document.getElementById("floor").addEventListener("change", function () {
     var floor = this.value;
-    console.log("Selected option:", floor);
+    if (floor === "") {
+      clearData();
+      return;
+    }
+    var select = document.getElementById("floor");
     $.ajax({
       url: `{% url "simulation" %}`,
       type: "POST",
@@ -219,8 +242,9 @@
             response.parkinglot.numberrows,
             response.parkinglot.numberparq,
             orientation,
-            floor,
-            response.spaces
+            select.options[select.selectedIndex].text,
+            response.spaces,
+            "simulate"
           );
         }
       },
@@ -242,112 +266,18 @@
       var cols = parseInt(colsInput.value);
 
       var orientation = document.getElementById("orientation").value;
-      var floor = document.getElementById("floor").value;
+      var select = document.getElementById("floor");
+      var floor = select.options[select.selectedIndex].text;
 
-      generateMatrix(rows, cols, orientation, floor);
+      generateMatrix(rows, cols, orientation, floor, [], "simulate");
     });
-
-  function generateMatrix(rows, cols, orientation, floor, spaces = []) {
-    var table = document.createElement("table");
-    table.classList.add("table", "table-bordered", "table-hover", "map-table");
-
-    if (orientation === "HORIZONTAL") {
-      for (var i = 0; i < rows; i++) {
-        var row = document.createElement("tr");
-
-        // Crear una celda para el número de fila
-        var rowHeader = document.createElement("td");
-        rowHeader.textContent = `Fila N° ${i + 1}`;
-        rowHeader.classList.add("header");
-        row.appendChild(rowHeader);
-
-        for (var j = 0; j < cols; j++) {
-          var cell = document.createElement("td");
-          var name = `P${floor}_F${i + 1}-E${j + 1}`;
-
-          if (existRegister(spaces, name))
-            cell.classList.add(
-              "map-cell",
-              "text-center",
-              "activeField",
-              "pqEst"
-            );
-          else cell.classList.add("map-cell", "text-center", "pqEst");
-
-          cell.textContent = name; // Texto de ejemplo
-
-          // Agregar evento onclick a la celda
-          cell.onclick = function () {
-            toggleCellBackground(this);
-          };
-
-          row.appendChild(cell);
-        }
-
-        table.appendChild(row);
-      }
-    } else if (orientation === "VERTICAL") {
-      var headerRow = document.createElement("tr");
-
-      for (var j = 0; j < rows; j++) {
-        var colHeader = document.createElement("td");
-        colHeader.textContent = `Fila N° ${j + 1}`;
-        colHeader.classList.add("header");
-        headerRow.appendChild(colHeader);
-      }
-      table.appendChild(headerRow);
-
-      for (var i = 0; i < cols; i++) {
-        var row = document.createElement("tr");
-
-        for (var j = 0; j < rows; j++) {
-          var cell = document.createElement("td");
-
-          var name = `P${floor}_F${j + 1}-E${i + 1}`;
-          if (existRegister(spaces, name))
-            cell.classList.add(
-              "map-cell",
-              "text-center",
-              "activeField",
-              "pqEst"
-            );
-          else cell.classList.add("map-cell", "text-center", "pqEst");
-
-          cell.textContent = name;
-
-          // Agregar evento onclick a la celda
-          cell.onclick = function () {
-            toggleCellBackground(this);
-          };
-
-          row.appendChild(cell);
-        }
-        table.appendChild(row);
-      }
-    }
-
-    // Limpiar el contenedor antes de agregar la nueva matriz
-    var oldMatrix = document.getElementById("simulate");
-    oldMatrix.innerHTML = "";
-    oldMatrix.appendChild(table);
-  }
-
-  function toggleCellBackground(cell) {
-    cell.classList.toggle("activeField");
-  }
-
-  function existRegister(spaces, value) {
-    var space = spaces.find((space) => space.name === value);
-    if (space) {
-      return space.status;
-    } else return true;
-  }
 
   function clearData() {
     document.getElementById("simulate").innerHTML = "";
     document.getElementById("numberparq").value = null;
     document.getElementById("rows").value = null;
     document.getElementById("orientation").value = "HORIZONTAL";
+    // document.getElementById("floor").value = "";
   }
   var SweetAlert2Demo = (function () {
     var initDemos = function () {
@@ -385,7 +315,6 @@
                 status: element.classList.contains("activeField"),
               });
             }
-            console.log(spaces);
             $.ajax({
               url: '{% url "savesimulation" %}',
               type: "POST",
