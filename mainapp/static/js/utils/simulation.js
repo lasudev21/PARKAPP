@@ -28,16 +28,20 @@ function generateMatrix(
           cell.classList.add("map-cell", "text-center", "activeField", "pqEst");
         else cell.classList.add("map-cell", "text-center", "pqEst");
 
-        cell.textContent = name; 
-
         // Agregar evento onclick a la celda
-        if (eventClick)
+        if (eventClick) {
           cell.onclick = function () {
             toggleCellBackground(this);
           };
-        else {
-          if (busyRegister(spaces, name))
+          cell.innerHTML = `${name}`;
+        } else {
+          var br = busyRegister(spaces, name);
+          if (br[0]) {
             cell.classList.add("map-cell", "text-center", "busyField", "pqEst");
+            cell.innerHTML = `${name} <span class="plate">${br[1]}<span>`;
+          } else {
+            cell.innerHTML = `${name}`;
+          }
         }
 
         row.appendChild(cell);
@@ -67,16 +71,20 @@ function generateMatrix(
           cell.classList.add("map-cell", "text-center", "activeField", "pqEst");
         else cell.classList.add("map-cell", "text-center", "pqEst");
 
-        cell.textContent = name;
-
         // Agregar evento onclick a la celda
-        if (eventClick)
+        if (eventClick) {
           cell.onclick = function () {
             toggleCellBackground(this);
           };
-        else {
-          if (busyRegister(spaces, name))
+          cell.textContent = name;
+        } else {
+          var br = busyRegister(spaces, name);
+          if (br[0]) {
             cell.classList.add("map-cell", "text-center", "busyField", "pqEst");
+            cell.innerHTML = `${name} <span class="plate">${br[1]}<span>`;
+          } else {
+            cell.innerHTML = `${name}`;
+          }
         }
         row.appendChild(cell);
       }
@@ -104,6 +112,6 @@ function existRegister(spaces, value) {
 function busyRegister(spaces, value) {
   var space = spaces.find((space) => space.name === value);
   if (space) {
-    return space.busy;
-  } else return false;
+    return [space.busy, space.plate];
+  } else return [false, ""];
 }

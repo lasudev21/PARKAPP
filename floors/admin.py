@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Floors, ParkingLots, Spaces
+from .models import Floors, ParkingLots, Spaces, History
 
 class FloorAdmin(admin.ModelAdmin):
     readonly_fields = ('created_at', 'updated_at')
@@ -13,7 +13,6 @@ class ParkingLotsAdmin(admin.ModelAdmin):
     search_fields = ('name', 'floor', 'orientation')
     list_filter = ('floor',)
     list_display = ('name', 'floor', 'orientation',)
-    # fields = ('name', 'floor')
     ordering = ('-created_at',)
     
     # def save_model(self, request, obj, form, change):
@@ -23,12 +22,17 @@ class ParkingLotsAdmin(admin.ModelAdmin):
 
 class SpacesAdmin(admin.ModelAdmin):
     readonly_fields = ('created_at', 'updated_at',)
-    search_fields = ('name', 'parkinglot', 'busy')
-    # list_filter = ('floor',)
-    list_display = ('name', 'parkinglot', 'busy', 'status')
-    # fields = ('name', 'floor')
+    search_fields = ('name', 'parkinglot', 'busy', 'plate')
+    list_display = ('name', 'parkinglot', 'busy', 'plate', 'status', 'income_at', 'exit_at')
+    ordering = ('-created_at',)
+
+class HistoryAdmin(admin.ModelAdmin):
+    readonly_fields = ('created_at', 'updated_at',)
+    search_fields = ('space', 'plate', 'income_at', 'exit_at')
+    list_display = ('space', 'plate', 'income_at', 'exit_at')
     ordering = ('-created_at',)
 
 admin.site.register(Floors, FloorAdmin)
 admin.site.register(ParkingLots, ParkingLotsAdmin)
 admin.site.register(Spaces, SpacesAdmin)
+admin.site.register(History, HistoryAdmin)

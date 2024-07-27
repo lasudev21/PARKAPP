@@ -33,14 +33,26 @@ table tr td {
 }
 
 .activeField {
-  background-color: #28a745; 
+  background-color: #35964bcc;
 }
 
 .busyField {
-  background-color: #E67E22; 
+  background-color: #e67d22a1;
 }
 
 .disableFlied {
   background-color: #6b6b6bd2;
-  cursor: none !important; 
+  cursor: none !important;
+}
+
+.plate {
+  border-radius: 10px;
+  background-color: #f3f31c !important;
+  font-weight: bold !important;
+  font-size: small !important;
+  border: 2px black solid !important;
+}
+
+.uppercase {
+  text-transform: uppercase;
 }

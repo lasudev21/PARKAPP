@@ -1,12 +1,17 @@
 {% extends "layouts/layout.html" %} {% block content %} {% load static %}
 
+<style>
+  .uppercase {
+    text-transform: uppercase;
+  }
+</style>
 <div class="row">
   <div class="col-md-12">
     <div class="card">
       <div class="card-header">
         <div class="d-flex align-items-center">
           <button
-            class="btn btn-primary btn-round ms-auto"
+            class="btn btn-secondary btn-round ms-auto"
             data-bs-toggle="modal"
             data-bs-target="#addRowModal"
           >
@@ -93,8 +98,8 @@
     <div class="modal-content">
       <div class="modal-header border-0">
         <h5 class="modal-title">
-          <span class="fw-mediumbold"> New</span>
-          <span class="fw-light"> Row </span>
+          <span class="fw-mediumbold"> Nuevo</span>
+          <span class="fw-light"> Piso </span>
         </h5>
         <button
           type="button"
@@ -115,7 +120,7 @@
                 <input
                   id="name"
                   type="text"
-                  class="form-control"
+                  class="form-control uppercase"
                 />
                 <input
                   id="id"
@@ -133,7 +138,7 @@
         <button
           type="button"
           id="addRowButton"
-          class="btn btn-primary"
+          class="btn btn-secondary"
         >
           Guardar
         </button>
@@ -158,11 +163,6 @@
     document.getElementById("name").value = name;
     $("#addRowModal").modal("show");
   }
-
-  // function clearData(){
-  //   document.getElementById("id").value = null;
-  //   document.getElementById("name").value = null;
-  // }
 
   function deleteRow(id) {
     $.ajax({

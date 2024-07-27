@@ -1,20 +1,22 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.contrib import messages
-from floors.models import Floors, ParkingLots, Spaces
-import json
+from floors.models import Floors, ParkingLots, Spaces, History
 from django.core.serializers.json import DjangoJSONEncoder
+from django.utils import timezone
+import json
 
 def floor(request):
     if request.method == 'POST':
         floorDato = Floors.objects.filter(id = request.POST.get('id', ''))
+        name = request.POST.get('name', '').upper()
         if(floorDato.exists()):
             floorDato.update(
-                name = request.POST.get('name', ''),
+                name = name,
             )
         else:
             Floors.objects.create(
-                name = request.POST.get('name', ''),
+                name = name,
             )
 
         return JsonResponse({'success' : True, 'message': 'Datos guardados correctamente'})
@@ -34,7 +36,7 @@ def deleteFloor(request):
         return JsonResponse({'success' : True, 'message': 'Dato eliminado correctamente'})
     
 def parkinglot(request):
-    floors = Floors.objects.all()
+    floors = Floors.objects.order_by('name').all()
     parkinglots = ParkingLots.objects.all()
 
     return render(request, 'parkinglots/index.html', {
@@ -118,24 +120,88 @@ def getSimulation(request):
             return JsonResponse({'success' : False, 'parkinglot': {}, 'spaces' : []})
 
 def parking(request):
+    return render(request, 'parkings/index.html', {
+        'title': 'Ingresos',
+        'breadcrumb': ['Parqueos', 'Ingresos'],
+        'parkings': jsonData()
+    })
+
+def postParking(request):
+    success = True;
+    message = "";
     if request.method == 'POST':
-        print("POST")
-        spacesDisp = Spaces.objects.filter(busy = False, status = True)
-        # print(spacesDisp)
-        # spacesDisp = Spaces.objects.filter(busy = True, status = True)
+        # Primero buscamos si el vehiculo está registrado
+        plate = request.POST.get('plateV').upper()
+        spacesDisp = Spaces.objects.filter(plate = plate)
+
+        print(spacesDisp, plate)
 
         if(spacesDisp.exists()):
-            # item = get_object_or_404(Spaces, id = spacesDisp.first().id)
-            # item = spacesDisp.first() 
-            # Spaces.objects.update()
-            #     id = spacesDisp.first().id
-            #     busy = False
-            # )
-            messages.warning(request, 'Vehículo ingresado con éxito')
+            print(spacesDisp[0].income_at)
+            History.objects.create(
+                space = spacesDisp[0],
+                plate = plate,
+                income_at = spacesDisp[0].income_at,
+                exit_at = timezone.now()
+            )
+            spacesDisp.update(
+                busy = False,
+                plate = "",
+                exit_at = timezone.now()
+            )            
+            message = 'Se ha registrado la salida del vehículo'
         else:
-            messages.warning(request, 'No hay ningun espacio de parqueo disponible')
+            spacesDisp = Spaces.objects.filter(busy = False, status = True)
+            if(spacesDisp.exists()):
+                space = Spaces.objects.filter(id = spacesDisp.first().id)
+                space.update(
+                    busy = True,
+                    plate = plate,
+                    income_at = timezone.now()
+                )
+                message = 'Vehículo ingresado con éxito'
+            else:
+                message = 'No hay ningun espacio de parqueo disponible'
+                success = False
 
+        return JsonResponse({'success' : success, 'message': message, 'parkings': jsonData()})
 
+def history(request):
+    floors = Floors.objects.order_by('-created_at').all()
+    return render(request, 'reports/history.html', {
+        'title': 'Historial',
+        'breadcrumb': ['Parqueos', 'Historial'],
+        'floors': floors
+    })
+
+def getPLDetail(request):
+    if request.method == 'POST':
+        parkinglot = ParkingLots.objects.filter(floor = request.POST.get('floor', ''))
+        if(parkinglot.exists()):
+            spaces = Spaces.objects.filter(parkinglot = parkinglot[0])
+            spacesObj = []
+            for obj in spaces:
+                spacesObj.append({'name': obj.name, 'status' : obj.status, 'id': obj.id})
+
+            return JsonResponse({'success' : True, 'spaces' : spacesObj})
+        else:
+            return JsonResponse({'success' : False, 'spaces' : []})
+        
+def getSpaceHistory(request):
+    if request.method == 'POST':
+        history = History.objects.filter(space = request.POST.get('space', ''))
+        if(history.exists()):
+            historyObj = []
+            for obj in history:
+                historyObj.append({'plate': obj.plate, 'income_at' : obj.income_at, 'exit_at': obj.exit_at, 'diff' : obj.diferencia_fechas() })
+
+            return JsonResponse({'success' : True, 'history' : historyObj})
+        else:
+            return JsonResponse({'success' : False, 'history' : []})
+
+#Metodos auxiliares
+
+def jsonData():
     parkinglots = ParkingLots.objects.all()
     parkingsJson = []
 
@@ -153,15 +219,9 @@ def parking(request):
         spaces = Spaces.objects.filter(parkinglot = parkinglot)
         spacesJson = []
         for space in spaces:
-            spacesJson.append({'name': space.name, 'status' : space.status, 'busy': space.busy})
+            spacesJson.append({'name': space.name, 'status' : space.status, 'busy': space.busy, 'plate' : space.plate})
         
         parking['spaces'] = spacesJson
         parkingsJson.append(parking)
 
-    parkingsJsonData = json.dumps(parkingsJson, cls=DjangoJSONEncoder)
-
-    return render(request, 'parkings/index.html', {
-        'title': 'Ingresos',
-        'breadcrumb': ['Parqueos', 'Ingresos'],
-        'parkings': parkingsJsonData
-    })
+    return json.dumps(parkingsJson, cls=DjangoJSONEncoder)

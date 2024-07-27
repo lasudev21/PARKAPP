@@ -1,0 +1,231 @@
+{% extends "layouts/layout.html" %} {% block content %} {% load static %}
+
+<style>
+  .uppercase {
+    text-transform: uppercase;
+  }
+</style>
+<div class="row">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <!-- <div class="d-flex align-items-center">
+          <button
+            class="btn btn-secondary btn-round ms-auto"
+            data-bs-toggle="modal"
+            data-bs-target="#addRowModal"
+          >
+            <i class="fa fa-plus"></i>
+            Agregar
+          </button>
+        </div> -->
+      </div>
+      <div class="card-body">
+        <form
+          id="matrixForm"
+          class="row mb-2"
+        >
+          <div class="col-md-5">
+            <div class="form-floating form-floating-custom">
+              <select
+                class="form-select"
+                id="floor"
+                required
+              >
+                <option value="">Seleccione...</option>
+                {% for floor in floors %}
+                <option value="{{ floor.id }}">{{ floor.name }}</option>
+                {% endfor %}
+              </select>
+              <label for="orientation">Planta</label>
+            </div>
+          </div>
+          <div class="col-md-5">
+            <div class="form-floating form-floating-custom">
+              <select
+                class="form-select"
+                id="parkinglot"
+                required
+              >
+                <!-- <option value="HORIZONTAL">Horizontal</option>
+                <option value="VERTICAL">Vertical</option> -->
+              </select>
+              <label for="parkinglot">Estacionamiento</label>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="d-grid gap-3">
+              <button
+                class="btn btn-secondary"
+                type="submit"
+                id="plate"
+              >
+                <i class="fas fa-cogs"></i>
+                Consultar
+              </button>
+            </div>
+          </div>
+        </form>
+        <div class="row mt-3">
+          <div class="col-md-12">
+            <table
+              id="myTable"
+              class="table"
+            >
+              <thead>
+                <tr>
+                  <th>Placa</th>
+                  <th>Ingreso</th>
+                  <th>Salida</th>
+                  <th>Tiempo Total</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/core/jquery-3.7.1.min.js' %}"></script>
+<script src="{% static 'js/plugin/datatables/datatables.min.js' %}"></script>
+
+<script>
+  $(document).ready(function () {
+    var table = $("#myTable").DataTable({
+      columns: [
+        { data: "plate" },
+        {
+          data: "income_at",
+          render: function (data, type, row) {
+            return toDateTime(data, type, row);
+          },
+        },
+        {
+          data: "exit_at",
+          render: function (data, type, row) {
+            return toDateTime(data, type, row);
+          },
+        },
+        {
+          data: "diff",
+          render: function (data, type, row) {
+            if (type === "display" || type === "filter") {
+              return formatearDuracion(data);
+            }
+            return data;
+          },
+        },
+      ],
+    });
+
+    document.getElementById("floor").addEventListener("change", function () {
+      var floor = this.value;
+      if (floor === "") {
+        clearData();
+        return;
+      }
+      $.ajax({
+        url: `{% url "getPLDetail" %}`,
+        type: "POST",
+        data: {
+          floor,
+        },
+        success: function (response) {
+          clearData();
+          if (response.success) {
+            var select = document.getElementById("parkinglot");
+
+            response.spaces.forEach((element) => {
+              var nuevaOpcion = document.createElement("option");
+              nuevaOpcion.value = element.id;
+              nuevaOpcion.text = element.name;
+              select.appendChild(nuevaOpcion);
+            });
+          }
+        },
+        error: function (error) {
+          alert("Error al ejecutar la acción");
+        },
+      });
+    });
+
+    document
+      .getElementById("matrixForm")
+      .addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        var parkinglot = document.getElementById("parkinglot");
+        space = parkinglot.value;
+
+        $.ajax({
+          url: `{% url "getSpaceHistory" %}`,
+          type: "POST",
+          data: {
+            space,
+          },
+          success: function (response) {
+            console.log(response);
+            if (response.success) {
+              // response.history.forEach((element) => {
+
+              table.clear().rows.add(response.history).draw();
+              // });
+            }
+          },
+          error: function (error) {
+            alert("Error al ejecutar la acción");
+          },
+        });
+      });
+
+    function clearData() {
+      var select = document.getElementById("parkinglot");
+      select.innerHTML = "";
+    }
+
+    function toDateTime(data, type, row) {
+      if (type === "display" || type === "filter") {
+        var fecha = new Date(data);
+        var opcionesFecha = {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        };
+        var opcionesHora = {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        };
+        return (
+          fecha.toLocaleDateString("es-ES", opcionesFecha) +
+          " " +
+          fecha.toLocaleTimeString("es-ES", opcionesHora)
+        );
+      }
+      return data;
+    }
+
+    function formatearDuracion(duracionISO) {
+      var duracion =
+        /P(?:(\d+)D)?T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?/.exec(
+          duracionISO
+        );
+      var dias = duracion[1] ? parseInt(duracion[1], 10) : 0;
+      var horas = duracion[2] ? parseInt(duracion[2], 10) : 0;
+      var minutos = duracion[3] ? parseInt(duracion[3], 10) : 0;
+      var segundos = duracion[4] ? Math.round(parseFloat(duracion[4])) : 0;
+
+      var partes = [];
+      if (dias > 0) partes.push(dias + "d");
+      if (horas > 0) partes.push(horas + "h");
+      if (minutos > 0) partes.push(minutos + "m");
+      if (segundos > 0) partes.push(segundos + "s");
+
+      return partes.join(" ");
+    }
+  });
+</script>
+{% endblock content %}
